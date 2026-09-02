@@ -1,7 +1,10 @@
-<script>
+<script lang="ts">
     import Card from "$lib/components/Card.svelte";
 
     let numBikesDonatedToday = 54;
+
+    let data = $props();
+    $inspect(data)
 </script>
 
 <h1>Dashboard</h1>
@@ -10,6 +13,7 @@
 <div class="flex-container">
     <Card title={"Total Bikes"} />
     <Card title={"Donated Today"} body={numBikesDonatedToday}/>
+    <Card title={"Where am I?"} body={data.data.location}/>
 </div>
 
 <style>
