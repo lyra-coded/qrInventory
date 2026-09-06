@@ -1,5 +1,6 @@
 <script>
+    import TitleRow from "$lib/components/TitleRow.svelte";
 </script>
 
-<h1>Reports</h1>
+<TitleRow title="Reports" />
 <p>under construction</p>

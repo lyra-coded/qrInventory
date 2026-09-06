@@ -169,7 +169,7 @@
   .menu-item:hover .label {
     opacity: 0.8;
   }
-
+  
   .icon-container {
     position: relative;
     width: 24px;

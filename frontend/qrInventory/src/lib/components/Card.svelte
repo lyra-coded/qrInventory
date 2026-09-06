@@ -1,10 +1,17 @@
 <script lang="ts">
-    let { title, body = "????"} = $props();
+    let { title, body="", content} = $props();
 </script>
 
 <div class="card">
-    <h3>{title}</h3>
-    <strong>{body}</strong>
+    {#if title}
+        <h2 class="card-title">{title}</h2>
+    {/if}
+    {#if body}
+        <strong>{body}</strong>
+    {/if}
+    {#if content}
+        {@render content()}
+    {/if}
 </div>
 
 <style>
@@ -19,8 +26,7 @@
     }
 
     .card-title {
-        color: #557da3;
-        font-size: 17px;
-        font-weight: 400;
+        /* color: #557da3;
+        font-weight: 400; */
     }
 </style>

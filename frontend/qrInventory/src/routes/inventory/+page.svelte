@@ -1,5 +1,6 @@
 <script>
+    import TitleRow from "$lib/components/TitleRow.svelte";
 </script>
 
-<h1>Inventory Management</h1>
+<TitleRow title="Inventory Management" />
 <p>Your inventory tables and data go here.</p>
