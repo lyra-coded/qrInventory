@@ -4,7 +4,7 @@
 
 <div class="top-bar">
   <h1>{title}</h1>
-  <a href="/addBike">+ Add Bike</a>
+  <a href="/addBicycle">+ Add Bicycle</a>
 </div>
 
 <style>
