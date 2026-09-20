@@ -1,8 +1,19 @@
 <script lang="ts">
     import Card from "$lib/components/Card.svelte";
-    import {bike} from "$lib/bike.svelte";
+    import { onMount } from "svelte";
+    // import {bike} from "$lib/bike.svelte";
 
-    $inspect(bike)
+    type inventoryProperties = Record<string, string | number | boolean>;
+    let inputProperties: inventoryProperties = $state({});
+
+    async function loadInventoryProps() {
+        const response = await fetch('/dynamic/public/inventoryProperties.json');
+        inputProperties = await response.json();
+    }
+
+    onMount(() => {
+        loadInventoryProps()
+    });
 
     function capitalizeFirstLetter(val: string) {
         return String(val).charAt(0).toUpperCase() + String(val).slice(1);
@@ -16,8 +27,8 @@
     {#snippet content()}
 
     <div class="form entry">
-        {#each Object.entries(bike) as [key, _]}
-            <h4>{capitalizeFirstLetter(key)}</h4><input type="text" bind:value={bike[key]} />
+        {#each Object.entries(inputProperties) as [key, _]}
+            <h4>{capitalizeFirstLetter(key)}</h4><input type="text" bind:value={inputProperties[key]} />
         {/each}
     </div>
 
