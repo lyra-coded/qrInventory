@@ -6,16 +6,22 @@
         ModuleRegistry,
         ClientSideRowModelModule,
         type GridOptions,
+        type GridApi,
         themeQuartz,
-        colorSchemeLightWarm
+        colorSchemeLightWarm,
+
+        AgPickerField
+
     } from 'ag-grid-community';
 
     let {
         columnDefs,
         rowData,
+        api = $bindable()
     }: {
         columnDefs: Array<any>;
         rowData: Array<any>;
+        api?: GridApi;
     } = $props();
 
     // Register AG Grid Modules as Community
@@ -45,9 +51,16 @@
         };
 
         if (gridDiv) {
-            createGrid(gridDiv, gridOptions); // Create the grid with custom options
+            api = createGrid(gridDiv, gridOptions); // Create the grid with custom options
         }
+
+        return () => api?.destroy();
     });
+
+    // handle reset, undo, redo
+    $effect(() => {
+        api?.setGridOption('rowData', rowData)
+    })
 </script>
 
 <!-- Grid Container -->

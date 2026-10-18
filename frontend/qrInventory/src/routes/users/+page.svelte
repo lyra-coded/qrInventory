@@ -1,8 +1,10 @@
-<script>
+<script lang="ts">
 import Grid from '$lib/components/Grid.svelte';
 import Card from '$lib/components/Card.svelte';
+import type { GridApi } from 'ag-grid-community';
 
 // TODO: fetch user data from backend
+
     const DonorColumns = [
         { headerName: 'Type', field: 'type' },
         { headerName: 'First Name', field: 'firstname' },
@@ -35,13 +37,13 @@ import Card from '$lib/components/Card.svelte';
         }
     ];
 
-    const UserColumns = [
+    const UsersColumns = [
         { headerName: 'User Name', field: 'username' },
         { headerName: 'User Password', field: 'password' },
         { headerName: 'Role', field: 'role' },
     ];
 
-	const UserRows = [
+	const UsersRows = [
         {
             username: 'StarsAndSteel',
             password: 'hehehe',
@@ -59,13 +61,32 @@ import Card from '$lib/components/Card.svelte';
         }
     ];
 
+    let donorData = $state.raw(structuredClone(DonorRows))
+    let usersData = $state.raw(structuredClone(UsersRows))
+
+    let donorApi: GridApi | undefined = $state()
+    let usersApi: GridApi | undefined = $state()
+    
+    // table resets
+    function resetTable(tableName: string) {
+        console.log(`Hello ${tableName}!`)
+        if (tableName === 'Donors') {
+            donorData = structuredClone(DonorRows)
+            donorApi?.resetColumnState();
+        } else if (tableName === 'Users') {
+            usersData = structuredClone(UsersRows)
+            usersApi?.resetColumnState();
+        }
+    }
+
 </script>
 
 <h1>Users</h1>
 
 <Card title="Donors">
     {#snippet content()}
-    <Grid rowData={DonorRows} columnDefs={DonorColumns} />
+    <Grid rowData={DonorRows} columnDefs={DonorColumns} bind:api={donorApi} />
+    <button onclick={() => resetTable('Donors')}>Reset</button>
     {/snippet}
 </Card>
 
@@ -73,6 +94,7 @@ import Card from '$lib/components/Card.svelte';
 
 <Card title="Users">
     {#snippet content()}
-    <Grid rowData={UserRows} columnDefs={UserColumns} />
+    <Grid rowData={UsersRows} columnDefs={UsersColumns} bind:api={usersApi} />
+        <button onclick={() => resetTable('Users')}>Reset</button>
     {/snippet}
 </Card>
