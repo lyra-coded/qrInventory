@@ -1,68 +1,20 @@
 <script lang="ts">
 import Grid from '$lib/components/Grid.svelte';
 import Card from '$lib/components/Card.svelte';
+import { onMount } from 'svelte';
 import type { GridApi } from 'ag-grid-community';
 
 // TODO: fetch user data from backend
 
-    const DonorColumns = [
-        { headerName: 'Type', field: 'type' },
-        { headerName: 'First Name', field: 'firstname' },
-        { headerName: 'Last Name', field: 'lastname' },
-        { headerName: 'Email', field: 'email' },
-        { headerName: 'Phone', field: 'phone' },
-        { headerName: 'Address', field: 'address' },
-        // Maybe this should be last donation time?
-        { headerName: 'Donation DateTime??', field: 'datetime' }
-    ];
+    let userData = $state.raw(null);
+    $inspect(userData)
 
-	const DonorRows = [
-        {
-            type: 'individual',
-            firstname: 'John',
-            lastname: 'Doe',
-            email: 'john@gmail.com',
-            phone: '123-456-7890',
-            address: 'Baltimore',
-            datetime: '1-2-23 00:00:00'
-        },
-        {
-            type: 'Organization',
-            firstname: 'Jane',
-            lastname: 'Business',
-            email: 'jane@business.com',
-            phone: '098-765-4321',
-            address: 'Boston',
-            datetime: '10-20-30 00:00:00'
+    onMount(async () => {
+        const response = await fetch('api/users')
+        if (response.ok) {
+            userData = await response.json();
         }
-    ];
-
-    const UsersColumns = [
-        { headerName: 'User Name', field: 'username' },
-        { headerName: 'User Password', field: 'password' },
-        { headerName: 'Role', field: 'role' },
-    ];
-
-	const UsersRows = [
-        {
-            username: 'StarsAndSteel',
-            password: 'hehehe',
-            role: 'Admin',
-        },
-        {
-            username: 'Agatha',
-            password: 'ahtaga',
-            role: 'Member',
-        },
-        {
-            username: 'John Doe',
-            password: 'JohnDoesBikeShare',
-            role: 'Owner',
-        }
-    ];
-
-    let donorData = $state.raw(structuredClone(DonorRows))
-    let usersData = $state.raw(structuredClone(UsersRows))
+    });
 
     let donorApi: GridApi | undefined = $state()
     let usersApi: GridApi | undefined = $state()
@@ -70,11 +22,12 @@ import type { GridApi } from 'ag-grid-community';
     // table resets
     function resetTable(tableName: string) {
         console.log(`Hello ${tableName}!`)
+        console.log(userData)
         if (tableName === 'Donors') {
-            donorData = structuredClone(DonorRows)
+            donorApi?.setGridOption('rowData', structuredClone(userData.donorRows))
             donorApi?.resetColumnState();
         } else if (tableName === 'Users') {
-            usersData = structuredClone(UsersRows)
+            donorApi?.setGridOption('rowData', structuredClone(userData.usersRows))
             usersApi?.resetColumnState();
         }
     }
@@ -83,18 +36,20 @@ import type { GridApi } from 'ag-grid-community';
 
 <h1>Users</h1>
 
-<Card title="Donors">
-    {#snippet content()}
-    <Grid rowData={DonorRows} columnDefs={DonorColumns} bind:api={donorApi} />
-    <button onclick={() => resetTable('Donors')}>Reset</button>
-    {/snippet}
-</Card>
+{#if userData}
+    <Card title="Donors">
+        {#snippet content()}
+        <Grid rowData={userData.donorRows} columnDefs={userData.donorColumns} bind:api={donorApi} />
+        <button onclick={() => resetTable('Donors')}>Reset</button>
+        {/snippet}
+    </Card>
 
-<br />
+    <br />
 
-<Card title="Users">
-    {#snippet content()}
-    <Grid rowData={UsersRows} columnDefs={UsersColumns} bind:api={usersApi} />
+    <Card title="Users">
+        {#snippet content()}
+        <Grid rowData={userData.usersRows} columnDefs={userData.usersColumns} bind:api={usersApi} />
         <button onclick={() => resetTable('Users')}>Reset</button>
-    {/snippet}
-</Card>
+        {/snippet}
+    </Card>
+{/if}
