@@ -1,4 +1,6 @@
-export function mssqlToAgGrid(sqlResponse) {
+export type GridData = { cols: { headerName: string; field: string }[]; rows: any[] };
+
+export async function mssqlToAgGrid(sqlResponse) {
     let colsHeaderNames: Array<string> = Object.keys(sqlResponse[0])
     let rows: Any = sqlResponse
     // replace underscores with spaces

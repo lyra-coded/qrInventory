@@ -1,12 +1,14 @@
 <script lang="ts">
 import Grid from '$lib/components/Grid.svelte';
 import Card from '$lib/components/Card.svelte';
+import { mssqlToAgGrid } from '$lib/mssqlToAgGrid';
 import { onMount } from 'svelte';
 import type { GridApi } from 'ag-grid-community';
+import type { GridData } from '$lib/mssqlToAgGrid';
 
-// TODO: fetch user data from backend
-
-    let userData = $state.raw(null);
+    // user data is array of GridDatas, defined by the user type in another array
+    let userTypes: Array<string> = ["donor", "users"]
+    let userData = $state.raw<GridData | null>(null);
     let donorColumns: any;
     let donorRows: any;
     $inspect(userData)
@@ -16,7 +18,8 @@ import type { GridApi } from 'ag-grid-community';
         // if we gain one more type of user, add url parameter for the types
         const response = await fetch('api/users')
         if (response.ok) {
-            userData = await response.json();
+            let raw = await response.json();
+            userData = await mssqlToAgGrid(raw)
             console.log(userData)
         }
     });
