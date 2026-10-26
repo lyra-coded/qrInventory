@@ -21,6 +21,7 @@
 		"vite": "^8.0.16"
 	},
 	"dependencies": {
-		"ag-grid-community": "^36.2.0"
+		"ag-grid-community": "^36.2.0",
+		"mssql": "^12.7.11"
 	}
 }

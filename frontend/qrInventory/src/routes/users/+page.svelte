@@ -7,12 +7,17 @@ import type { GridApi } from 'ag-grid-community';
 // TODO: fetch user data from backend
 
     let userData = $state.raw(null);
+    let donorColumns: any;
+    let donorRows: any;
     $inspect(userData)
 
     onMount(async () => {
+        // for now, return users of all types at api/users
+        // if we gain one more type of user, add url parameter for the types
         const response = await fetch('api/users')
         if (response.ok) {
             userData = await response.json();
+            console.log(userData)
         }
     });
 
@@ -39,7 +44,7 @@ import type { GridApi } from 'ag-grid-community';
 {#if userData}
     <Card title="Donors">
         {#snippet content()}
-        <Grid rowData={userData.donorRows} columnDefs={userData.donorColumns} bind:api={donorApi} />
+        <Grid rowData={userData.rows} columnDefs={userData.cols} bind:api={donorApi} />
         <button onclick={() => resetTable('Donors')}>Reset</button>
         {/snippet}
     </Card>
