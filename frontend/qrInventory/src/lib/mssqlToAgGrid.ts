@@ -1,8 +1,8 @@
-export type GridData = { cols: { headerName: string; field: string }[]; rows: any[] };
+export type GridData = { cols: { headerName: string; field: string }[]; rows: any[];};
 
 export async function mssqlToAgGrid(sqlResponse) {
     let colsHeaderNames: Array<string> = Object.keys(sqlResponse[0])
-    let rows: Any = sqlResponse
+    let rows: any = sqlResponse
     // replace underscores with spaces
     colsHeaderNames = colsHeaderNames.map(element => element.replaceAll('_', ' '))
     // turn capitalize first letter of each word

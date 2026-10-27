@@ -3,61 +3,76 @@ import Grid from '$lib/components/Grid.svelte';
 import Card from '$lib/components/Card.svelte';
 import { mssqlToAgGrid } from '$lib/mssqlToAgGrid';
 import { onMount } from 'svelte';
+import { SvelteMap } from 'svelte/reactivity';
 import type { GridApi } from 'ag-grid-community';
 import type { GridData } from '$lib/mssqlToAgGrid';
 
     // user data is array of GridDatas, defined by the user type in another array
     let userTypes: Array<string> = ["donor", "users"]
-    let userData = $state.raw<GridData | null>(null);
-    let donorColumns: any;
-    let donorRows: any;
-    $inspect(userData)
+    let userDataMap = new SvelteMap<string, GridData | undefined>();
+    let gridApis = $state<Record<string, GridApi>>({})
+    let error: string | null = $state(null);
 
     onMount(async () => {
-        // for now, return users of all types at api/users
-        // if we gain one more type of user, add url parameter for the types
-        const response = await fetch('api/users')
-        if (response.ok) {
-            let raw = await response.json();
-            userData = await mssqlToAgGrid(raw)
-            console.log(userData)
-        }
-    });
+        const allUserTypesAndData = await Promise.all(
+            userTypes.map(async (userType: string) => {
+                // fetch user data by userType from backend
+                let userParams = new URLSearchParams({userType: userType})
+                // console.log(`api/users?${userParams}`)
 
-    let donorApi: GridApi | undefined = $state()
-    let usersApi: GridApi | undefined = $state()
-    
-    // table resets
-    function resetTable(tableName: string) {
-        console.log(`Hello ${tableName}!`)
-        console.log(userData)
-        if (tableName === 'Donors') {
-            donorApi?.setGridOption('rowData', structuredClone(userData.donorRows))
-            donorApi?.resetColumnState();
-        } else if (tableName === 'Users') {
-            donorApi?.setGridOption('rowData', structuredClone(userData.usersRows))
-            usersApi?.resetColumnState();
+                try {
+                    const response = await fetch(`api/users?${userParams}`)
+                    if (response.ok) {
+                        let raw = await response.json();
+                        let userData: GridData = await mssqlToAgGrid(raw)
+                        // return userType string, the userData, and the api to reset the table with
+                        // console.log([userType, userData])
+                        return [userType, userData] as const
+                    } else {
+                        throw new Error(`Failed to load ${userType}`)
+                    }
+                } catch (e) {
+                    error = e instanceof Error ? e.message : "Something went wrong"
+                }
+
+            })
+        )
+
+        // console.log(allUserTypesAndData)
+        for (const entry of allUserTypesAndData) {
+            if (!entry) continue;
+            const [type, grid] = entry;
+            userDataMap.set(type, grid)
         }
+        // console.log(userDataMap)
+    });
+    
+    // table resets   
+    function resetTable(userType: string) {
+        if (!userDataMap) return;
+        gridApis[userType].setGridOption('rowData', structuredClone(userDataMap.get(userType).rows))
+        gridApis[userType].resetColumnState()
     }
 
 </script>
 
 <h1>Users</h1>
 
-{#if userData}
-    <Card title="Donors">
-        {#snippet content()}
-        <Grid rowData={userData.rows} columnDefs={userData.cols} bind:api={donorApi} />
-        <button onclick={() => resetTable('Donors')}>Reset</button>
-        {/snippet}
-    </Card>
 
-    <br />
-
-    <Card title="Users">
-        {#snippet content()}
-        <Grid rowData={userData.usersRows} columnDefs={userData.usersColumns} bind:api={usersApi} />
-        <button onclick={() => resetTable('Users')}>Reset</button>
-        {/snippet}
-    </Card>
+{#if userDataMap}
+    {#each userTypes as type}
+    {@const entry = userDataMap.get(type)}
+    {#if entry}
+        <Card title="Donors">
+        {#snippet content()}            
+            <Grid
+                    rowData={entry.rows}
+                    columnDefs={entry.cols}
+                    bind:api={gridApis[type]}
+                />
+                <button onclick={() => resetTable(type)}>Reset</button>
+                {/snippet}
+        </Card>
+    {/if}
+{/each}
 {/if}
